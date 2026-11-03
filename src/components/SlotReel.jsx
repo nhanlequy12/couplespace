@@ -3,7 +3,7 @@ import { motion, useMotionValue, animate } from 'framer-motion'
 
 const ITEM_W = 168          // bề rộng mỗi ô trên cuộn (px)
 const TARGET_INDEX = 3      // vị trí ô trúng trong cuộn (có vài ô bên trái làm nền)
-const SPIN_DURATION = 4.4   // giây
+const SPIN_DURATION = 6     // giây
 
 /** Tiếng "tích" kiểu bánh xe casino, dùng WebAudio nên không cần file âm thanh */
 function makeTicker() {
