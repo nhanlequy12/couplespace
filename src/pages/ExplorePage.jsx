@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import confetti from 'canvas-confetti'
 import { useAuth } from '../context/AuthContext'
 import { usePlaces } from '../hooks/usePlaces'
 import { useDragScroll } from '../lib/useDragScroll'
+import SlotReel from '../components/SlotReel'
 import { placeMapUrl, placeDirectionsUrl, nearbyUrl, mapsSearchUrl, isMapsLink } from '../lib/maps'
 import {
   Card, PageHeader, SectionTitle, Button, IconButton, Chip, ChipRow, Input, Textarea, Select,
@@ -116,8 +117,9 @@ export default function ExplorePage() {
   const [saving, setSaving] = useState(false)
 
   const [spinning, setSpinning] = useState(false)
-  const [tempName, setTempName] = useState('')
   const [result, setResult] = useState(null)
+  const [muted, setMuted] = useState(() => localStorage.getItem('cs_reel_muted') === '1')
+  const reelRef = useRef(null)
 
   const canDelete = profile?.sex === 'male'
 
@@ -163,22 +165,22 @@ export default function ExplorePage() {
 
   const handleRandom = () => {
     if (!filtered.length) { toast('Hong có quán nào hợp tiêu chí hết á 🥺', 'error'); return }
-    setSpinning(true)
-    setResult(null)
     // Ưu tiên quán yêu thích & quán chưa ghé một chút
     const pool = filtered.flatMap(p => Array(1 + (p.favorite ? 1 : 0) + (!p.visits ? 1 : 0)).fill(p))
-    let count = 0
-    const maxSpins = 22
-    const timer = setInterval(() => {
-      setTempName(filtered[Math.floor(Math.random() * filtered.length)].name)
-      if (++count >= maxSpins) {
-        clearInterval(timer)
-        const pick = pool[Math.floor(Math.random() * pool.length)]
-        setResult(pick)
-        setSpinning(false)
-        confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 }, colors: ['#7dd3fc', '#38bdf8', '#bae6fd', '#ffffff'] })
-      }
-    }, 70)
+    const pick = pool[Math.floor(Math.random() * pool.length)]
+    setResult(null)
+    setSpinning(true)
+    reelRef.current?.spin(pick)
+  }
+
+  const handleLanded = (pick) => {
+    setResult(pick)
+    setSpinning(false)
+    confetti({ particleCount: 70, spread: 75, origin: { y: 0.6 }, colors: ['#7dd3fc', '#38bdf8', '#bae6fd', '#ffffff'] })
+  }
+
+  const toggleMuted = () => {
+    setMuted(m => { localStorage.setItem('cs_reel_muted', m ? '0' : '1'); return !m })
   }
 
   const nearbyCat = filterCat === 'All' ? 'quán ăn' : filterCat
@@ -217,30 +219,41 @@ export default function ExplorePage() {
           </Card>
 
           <Card className="overflow-hidden">
-            <div className="min-h-[7.5rem] flex items-center justify-center mb-4 bg-gradient-to-br from-sky-50 to-sky-100 rounded-2xl border border-sky-200 p-4 text-center">
-              <AnimatePresence mode="wait">
-                {spinning ? (
-                  <motion.p key="spin" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} className="text-lg font-bold text-sky-400 italic">
-                    {tempName}...
-                  </motion.p>
-                ) : result ? (
-                  <motion.div key={result.id} initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 18 }} className="w-full">
-                    <p className="text-xs font-bold text-sky-400 uppercase tracking-widest mb-1">Đi ăn thôi 🎉</p>
-                    <p className="text-xl sm:text-2xl font-black text-sky-700 break-words">{result.name}</p>
-                    <p className="text-xs text-gray-500 mt-1">{result.category} · {result.district}{result.price && ` · ${result.price}`}</p>
-                    {result.note && <p className="text-[11px] text-yellow-800 bg-yellow-100/80 px-3 py-1 rounded-full mt-2 inline-block">📌 {result.note}</p>}
-                    <div className="flex justify-center mt-3"><MapActions place={result} size="sm" /></div>
-                  </motion.div>
-                ) : (
-                  <motion.p key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-gray-400 font-medium text-sm">
-                    {filtered.length} quán chờ được chọn 👇
-                  </motion.p>
-                )}
-              </AnimatePresence>
+            <div className="mb-4 bg-gradient-to-br from-sky-50 to-sky-100 rounded-2xl border border-sky-200 p-3 sm:p-4">
+              <div className="flex items-center justify-between mb-2 px-1">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-sky-500">🎰 Vòng quay may mắn</p>
+                <button onClick={toggleMuted} title={muted ? 'Bật tiếng' : 'Tắt tiếng'} className="text-sm leading-none text-sky-500 hover:text-sky-700 active:scale-90 transition-transform">
+                  {muted ? '🔕' : '🔔'}
+                </button>
+              </div>
+
+              <SlotReel ref={reelRef} items={filtered} onLanded={handleLanded} muted={muted} />
+
+              <div className="min-h-[4.25rem] flex items-center justify-center text-center mt-3">
+                <AnimatePresence mode="wait">
+                  {spinning ? (
+                    <motion.p key="spin" initial={{ opacity: 0 }} animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1.1 }} className="text-sm font-bold text-sky-500 italic">
+                      Hồi hộp quá... 🥁
+                    </motion.p>
+                  ) : result ? (
+                    <motion.div key={result.id} initial={{ opacity: 0, y: 10, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 18 }} className="w-full">
+                      <p className="text-xs font-bold text-sky-400 uppercase tracking-widest mb-0.5">Đi ăn thôi 🎉</p>
+                      <p className="text-xl sm:text-2xl font-black text-sky-700 break-words">{result.name}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{result.category} · {result.district}{result.price && ` · ${result.price}`}</p>
+                      {result.note && <p className="text-[11px] text-yellow-800 bg-yellow-100/80 px-3 py-1 rounded-full mt-2 inline-block">📌 {result.note}</p>}
+                      <div className="flex justify-center mt-2.5"><MapActions place={result} size="sm" /></div>
+                    </motion.div>
+                  ) : (
+                    <motion.p key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-gray-400 font-medium text-sm">
+                      {filtered.length} quán đang chờ trên vòng quay 👇
+                    </motion.p>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
 
             <Button size="lg" className="w-full" onClick={handleRandom} disabled={spinning || !filtered.length} loading={spinning}>
-              {spinning ? 'Đang chọn...' : result ? '🎲 Quay lại phát nữa' : '🎲 QUAY RANDOM'}
+              {spinning ? 'Đang quay...' : result ? '🎰 Quay lại phát nữa' : '🎰 QUAY RANDOM'}
             </Button>
 
             <a href={nearbyUrl(nearbyCat)} target="_blank" rel="noreferrer"
