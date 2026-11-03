@@ -1,0 +1,116 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
+
+@theme {
+  --font-sans: 'Quicksand', system-ui, -apple-system, sans-serif;
+
+  /* Tone chủ đạo: trắng – xanh da trời (dùng bảng màu sky có sẵn của Tailwind) */
+  --shadow-soft: 0 8px 30px rgba(14, 165, 233, 0.08);
+  --shadow-sky: 0 10px 30px rgba(14, 165, 233, 0.28);
+  --radius-4xl: 2rem;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+  }
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    color: #0c2d48;
+    background: #f5fbff;
+    background-image:
+      radial-gradient(60% 50% at 0% 0%, rgba(125, 211, 252, 0.35) 0%, transparent 60%),
+      radial-gradient(50% 45% at 100% 10%, rgba(186, 230, 253, 0.5) 0%, transparent 60%),
+      radial-gradient(60% 60% at 50% 100%, rgba(240, 249, 255, 0.9) 0%, transparent 70%);
+    background-attachment: fixed;
+    font-family: var(--font-sans);
+  }
+  input, textarea, select, button {
+    font-family: inherit;
+  }
+  input[type='date']::-webkit-calendar-picker-indicator {
+    opacity: 0.5;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white/80 backdrop-blur-xl rounded-3xl border border-white shadow-soft;
+  }
+  .pill {
+    @apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .thin-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #bae6fd transparent;
+  }
+  .thin-scroll::-webkit-scrollbar {
+    height: 4px;
+    width: 4px;
+  }
+  .thin-scroll::-webkit-scrollbar-thumb {
+    background: #bae6fd;
+    border-radius: 999px;
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .text-gradient {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-sky-500 to-blue-600;
+  }
+}
+
+@layer utilities {
+  .animate-blob {
+    animation: blob 8s infinite ease-in-out;
+  }
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
+  .animate-shake {
+    animation: shake 0.4s ease-in-out;
+  }
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+}
+
+@keyframes blob {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(30px, -20px) scale(1.08); }
+  66%       { transform: translate(-20px, 20px) scale(0.95); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-6px); }
+  40%      { transform: translateX(6px); }
+  60%      { transform: translateX(-4px); }
+  80%      { transform: translateX(4px); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

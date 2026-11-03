@@ -1,0 +1,31 @@
+{
+  "name": "CoupleSpace",
+  "short_name": "CoupleSpace",
+  "description": "Góc nhỏ của hai đứa: hôm nay ăn gì, tâm trạng, bucket list và wishlist bí mật.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f5fbff",
+  "theme_color": "#0ea5e9",
+  "orientation": "any",
+  "scope": "./",
+  "lang": "vi",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    { "name": "Hôm nay ăn gì?", "url": "./explore", "description": "Quay random quán ăn" },
+    { "name": "Bucket List", "url": "./bucket-list" },
+    { "name": "Kho báu", "url": "./wishlist" }
+  ]
+}
